@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日科技新聞聚合</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <div class="bg-decor" aria-hidden="true"></div>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="brand">
+                <span class="brand-badge">TECH</span>
+                <h1>每日科技新聞聚合</h1>
+            </div>
+            <p class="subtitle">即時彙整國內外科技新聞 · 不落地儲存 · 每次瀏覽即時抓取</p>
+            <div class="hero-stats">
+                <div class="stat-pill"><span class="dot dot-live"></span>Realtime</div>
+                <div class="stat-pill">🌐 國內外 {{ sources|length }} 個來源</div>
+                <div class="stat-pill">⚡ 平行抓取</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="filters" aria-label="新聞來源篩選">
+            <div class="filters-header">
+                <span class="filters-title">📡 新聞來源</span>
+                <div class="filters-actions">
+                    <button id="select-all" type="button" class="btn btn-ghost">全選</button>
+                    <button id="select-none" type="button" class="btn btn-ghost">全不選</button>
+                    <button id="refresh" type="button" class="btn btn-primary">
+                        <span class="refresh-icon">↻</span> 重新整理
+                    </button>
+                </div>
+            </div>
+            <div class="source-list">
+                {% for source in sources %}
+                <label class="source-chip" data-region="{{ source.region }}">
+                    <input type="checkbox" class="source-input" value="{{ source.id }}" checked />
+                    <span class="chip-check" aria-hidden="true"></span>
+                    <span class="chip-label">{{ source.name }}</span>
+                    <span class="region-tag region-{{ source.region }}">{{ '國內' if source.region == 'tw' else '國外' }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section id="status-bar" class="status-bar" aria-live="polite"></section>
+
+        <section id="news-list" class="news-list">
+            <div class="skeleton-grid">
+                {% for _ in range(6) %}
+                <div class="skeleton-card">
+                    <div class="skeleton-line skeleton-title"></div>
+                    <div class="skeleton-line skeleton-meta"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line skeleton-short"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>資料來源為各媒體公開 RSS/Atom feed，內容版權屬原作者所有。</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
