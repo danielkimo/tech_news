@@ -52,7 +52,33 @@ open ios/TechPulse.xcodeproj
   ```swift
   static let baseURL = URL(string: "http://192.168.1.23:6173")!
   ```
-  並確認 iPhone 與 Mac 在同一個 Wi-Fi，Mac 防火牆允許連入。
+  並確認 iPhone 與 Mac 在同一個 Wi-Fi，Mac 防火牆允許連入。目前 `project.yml`
+  已設定 `DEVELOPMENT_TEAM`（個人 Apple ID 的簽署 Team ID），第一次在實機上打開
+  App 前，需要到 iPhone **設定 → 一般 → VPN 與裝置管理** 手動信任該開發者憑證，
+  否則系統會拒絕執行未受信任的 App。個人免費簽署效期為 7 天，過期後需要
+  重新用 Xcode 或下方命令列步驟重新 build 安裝一次。
+
+### 3b. 命令列建置並直接安裝到實體 iPhone（不開 Xcode GUI）
+
+先用 `xcrun xctrace list devices` 找出你的 iPhone 的裝置 ID，然後：
+
+```bash
+cd ios
+DEVICE_ID="<你的 iPhone 裝置 ID>"
+
+# 建置（-allowProvisioningUpdates 讓 Xcode 自動處理簽署憑證）
+xcodebuild -project TechPulse.xcodeproj -scheme TechPulse \
+  -destination "id=$DEVICE_ID" -configuration Debug -allowProvisioningUpdates build
+
+# 安裝到裝置
+APP_PATH="$(xcodebuild -project TechPulse.xcodeproj -scheme TechPulse \
+  -destination "id=$DEVICE_ID" -configuration Debug -showBuildSettings \
+  | awk -F'= ' '/ BUILT_PRODUCTS_DIR /{print $2; exit}')/TechPulse.app"
+xcrun devicectl device install app --device "$DEVICE_ID" "$APP_PATH"
+
+# 啟動
+xcrun devicectl device process launch --device "$DEVICE_ID" com.danielkimo.technews.techpulse
+```
 
 ### 3. 也可用命令列建置與安裝到模擬器（不開 Xcode GUI）
 

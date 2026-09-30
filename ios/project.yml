@@ -40,5 +40,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
-        DEVELOPMENT_TEAM: ""
+        # 個人開發者簽署 Team ID（安裝到實體裝置需要）。若換用不同 Apple ID，
+        # 請改成該帳號的 Team ID（Xcode > Settings > Accounts 可查看）。
+        DEVELOPMENT_TEAM: VF68M6SD79
         CODE_SIGN_STYLE: Automatic

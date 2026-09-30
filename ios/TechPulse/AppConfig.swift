@@ -12,6 +12,8 @@ import Foundation
 /// - 未來若把 Flask 後端部署到正式伺服器（建議加上 HTTPS），
 ///   把這裡改成正式網域即可，例如 `https://technews.example.com`。
 enum AppConfig {
-    static let baseURL = URL(string: "http://localhost:6173")!
+    // 目前設定為實體 iPhone 測試用：Mac 區域網路 IP（192.168.0.160）。
+    // 若改用模擬器測試，請改回 "http://localhost:6173"。
+    static let baseURL = URL(string: "http://192.168.0.160:6173")!
     static let appDisplayName = "科技脈動"
 }
