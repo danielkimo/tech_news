@@ -354,6 +354,12 @@ main {
     display: flex;
     flex-direction: column;
     animation: fadeIn 0.35s ease both;
+    cursor: pointer;
+}
+
+.news-card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 @keyframes fadeIn {
@@ -419,6 +425,25 @@ main {
     color: #4b5261;
     margin: 0;
     flex: 1;
+}
+
+.news-read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.news-card:hover .news-read-more,
+.news-card:focus-visible .news-read-more {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 .loading,

@@ -42,7 +42,7 @@ function renderNews(items) {
     newsListEl.innerHTML = items
         .map(
             (item) => `
-        <article class="news-card">
+        <article class="news-card" data-link="${escapeHtml(item.link)}" tabindex="0" role="link">
             <h2><a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(
                 item.title
             )}</a></h2>
@@ -51,11 +51,40 @@ function renderNews(items) {
                 <span class="news-time">${escapeHtml(formatPublished(item.published))}</span>
             </div>
             <p class="news-summary">${escapeHtml(item.summary)}</p>
+            <span class="news-read-more">閱讀原文 ↗</span>
         </article>
     `
         )
         .join("");
 }
+
+function openLink(link) {
+    if (!link) return;
+    // 用 window.open 明確開新分頁/瀏覽器視窗，避免部分內嵌瀏覽器環境對
+    // <a target="_blank"> 的支援不一致。
+    const win = window.open(link, "_blank", "noopener,noreferrer");
+    if (!win) {
+        // 若被彈出視窗攔截，退而求其次改用當前分頁導航。
+        window.location.href = link;
+    }
+}
+
+// 讓整張卡片可點擊開啟原始全文；若點擊的是標題連結本身，交給瀏覽器原生
+// <a> 行為處理即可，避免同時觸發兩次開啟。
+newsListEl.addEventListener("click", (event) => {
+    const card = event.target.closest(".news-card");
+    if (!card) return;
+    if (event.target.closest("a")) return;
+    openLink(card.dataset.link);
+});
+
+newsListEl.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const card = event.target.closest(".news-card");
+    if (!card) return;
+    event.preventDefault();
+    openLink(card.dataset.link);
+});
 
 function renderStatus(sources) {
     const errorEntries = Object.entries(sources).filter(([, info]) => info.status === "error");
