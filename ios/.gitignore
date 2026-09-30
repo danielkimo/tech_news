@@ -1,0 +1,5 @@
+# Xcode 使用者本機狀態，不需要進版控
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.build/

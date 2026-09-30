@@ -122,6 +122,17 @@ curl "http://localhost:5000/api/news?sources=techcrunch,ithome"  # 只抓指定�
 - **前端**：Vanilla JS，勾選來源後以 query param（`?sources=a,b,c`）重新呼叫
   `/api/news`，由後端依快取狀態回傳資料；錯誤來源會在狀態列顯示「抓取失敗」提示。
 
+## iOS App：科技脈動 TechPulse
+
+專案也提供一個原生 iOS App「科技脈動 TechPulse」，用 SwiftUI + WKWebView
+包裝本網站，並附上自訂 App Icon。詳見 [`ios/README.md`](ios/README.md)，
+內含如何用 Xcode 開啟執行、如何切換模擬器/實機的連線位址、以及如何重新
+產生 Xcode 專案與 Icon 圖檔。
+
+```bash
+open ios/TechPulse.xcodeproj
+```
+
 ## 已知限制 / 後續可優化方向
 
 - 目前摘要僅做簡單的 HTML 標籤移除與長度截斷，未做進一步排版清理。
