@@ -7,6 +7,13 @@ const statusBarEl = document.getElementById("status-bar");
 const refreshBtn = document.getElementById("refresh");
 const selectAllBtn = document.getElementById("select-all");
 const selectNoneBtn = document.getElementById("select-none");
+const categoryBtns = document.querySelectorAll(".category-btn");
+
+// 目前抓取到的完整新聞清單（未套用 AI 篩選前），切換 AI 篩選時直接用這份
+// 資料重新渲染，不需要重打 API。
+let lastFetchedItems = [];
+// "all" | "ai" | "non-ai"
+let currentAiFilter = "all";
 
 function getSelectedSourceIds() {
     return Array.from(document.querySelectorAll(".source-input:checked")).map(
@@ -33,22 +40,29 @@ function formatPublished(raw) {
     return date.toLocaleString("zh-TW", { hour12: false });
 }
 
+function filterByAiCategory(items) {
+    if (currentAiFilter === "ai") return items.filter((item) => item.is_ai);
+    if (currentAiFilter === "non-ai") return items.filter((item) => !item.is_ai);
+    return items;
+}
+
 function renderNews(items) {
     if (!items.length) {
-        newsListEl.innerHTML = '<p class="empty">目前沒有符合條件的新聞，請確認至少勾選一個來源。</p>';
+        newsListEl.innerHTML = '<p class="empty">目前沒有符合條件的新聞，請確認至少勾選一個來源，或調整新聞類型篩選。</p>';
         return;
     }
 
     newsListEl.innerHTML = items
         .map(
             (item) => `
-        <article class="news-card" data-link="${escapeHtml(item.link)}" tabindex="0" role="link">
+        <article class="news-card" data-link="${escapeHtml(item.link)}" data-ai="${item.is_ai ? "true" : "false"}" tabindex="0" role="link">
             <h2><a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(
                 item.title
             )}</a></h2>
             <div class="news-meta">
                 <span class="news-source">${escapeHtml(item.source_name)}</span>
                 <span class="news-time">${escapeHtml(formatPublished(item.published))}</span>
+                ${item.is_ai ? '<span class="ai-badge">🤖 AI</span>' : ""}
             </div>
             <p class="news-summary">${escapeHtml(item.summary)}</p>
             <span class="news-read-more">閱讀原文 ↗</span>
@@ -101,6 +115,7 @@ function renderStatus(sources) {
 async function loadNews() {
     const selectedIds = getSelectedSourceIds();
     if (!selectedIds.length) {
+        lastFetchedItems = [];
         renderNews([]);
         statusBarEl.textContent = "";
         return;
@@ -122,7 +137,8 @@ async function loadNews() {
             throw new Error(`HTTP ${response.status}`);
         }
         const data = await response.json();
-        renderNews(data.items);
+        lastFetchedItems = data.items;
+        renderNews(filterByAiCategory(lastFetchedItems));
         renderStatus(data.sources);
     } catch (err) {
         newsListEl.innerHTML = `<p class="empty">載入新聞失敗，請稍後再試。(${escapeHtml(err.message)})</p>`;
@@ -144,5 +160,13 @@ selectNoneBtn.addEventListener("click", () => {
 });
 
 refreshBtn.addEventListener("click", loadNews);
+
+categoryBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+        currentAiFilter = btn.dataset.aiFilter;
+        categoryBtns.forEach((b) => b.classList.toggle("is-active", b === btn));
+        renderNews(filterByAiCategory(lastFetchedItems));
+    });
+});
 
 loadNews();

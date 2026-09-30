@@ -2,7 +2,8 @@
 
 即時彙整國內外主要科技新聞網站的最新新聞。**不使用資料庫或寫檔案持久化**，
 每次使用者瀏覽網頁時即時透過 RSS/Atom feed 抓取，並在伺服器記憶體中做短暫快取
-（預設 5 分鐘），避免同時大量請求打爆來源站台。
+（預設 5 分鐘），避免同時大量請求打爆來源站台。支援依「新聞來源」與「是否為
+AI 相關新聞」雙重篩選，點擊卡片可在新分頁開啟原始全文。
 
 ## 專案結構
 
@@ -14,10 +15,10 @@
 │   ├── news_service.py        # RSS 抓取、正規化、平行處理、記憶體快取
 │   └── translation.py         # 翻譯層（目前 no-op，未來可接 Azure OpenAI）
 ├── templates/
-│   └── index.html             # 首頁模板（來源勾選 UI + 新聞卡片容器）
+│   └── index.html             # 首頁模板（來源勾選 UI + AI/非AI 篩選 + 新聞卡片容器）
 ├── static/
 │   ├── style.css              # 版面樣式
-│   └── app.js                 # 前端邏輯：呼叫 /api/news、渲染卡片、篩選來源
+│   └── app.js                 # 前端邏輯：呼叫 /api/news、渲染卡片、篩選來源與 AI 類型
 ├── requirements.txt
 └── README.md
 ```
@@ -121,6 +122,12 @@ curl "http://localhost:5000/api/news?sources=techcrunch,ithome"  # 只抓指定�
   純粹存在於 process 記憶體中，重啟服務即清空，符合「不落地儲存」的需求。
 - **前端**：Vanilla JS，勾選來源後以 query param（`?sources=a,b,c`）重新呼叫
   `/api/news`，由後端依快取狀態回傳資料；錯誤來源會在狀態列顯示「抓取失敗」提示。
+- **AI / 非AI 新聞篩選**：後端 `_is_ai_related()`（`services/news_service.py`）用
+  關鍵字比對（英文含詞界避免誤判如 "AI" 誤中 "AIR"；中文為子字串比對）判斷
+  每則新聞是否與 AI 相關，回傳的每個 item 都會多一個 `is_ai` 欄位。前端拿到
+  資料後在瀏覽器端即時套用篩選（不需重打 API），切換「全部 / 只看 AI 新聞 /
+  非 AI 新聞」三個按鈕即可即時切換顯示。若日後想要更準確的分類，可以把
+  `_is_ai_related()` 換成呼叫 LLM 分類 API。
 
 ## iOS App：科技脈動 TechPulse
 

@@ -39,9 +39,41 @@ SUMMARY_MAX_LENGTH = 200
 
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
+# AI 相關關鍵字（英文用 \b 詞界避免誤判，例如 "AI" 不會誤中 "AIR"、"MAIN"）。
+# 中文關鍵字不需要詞界，直接子字串比對即可。
+_AI_KEYWORDS_EN = [
+    "ai", "a.i.", "artificial intelligence", "machine learning", "deep learning",
+    "neural network", "llm", "large language model", "generative ai",
+    "genai", "chatgpt", "openai", "anthropic", "claude", "gemini", "copilot",
+    "midjourney", "stable diffusion", "sora", "nvidia ai", "agentic",
+]
+_AI_KEYWORDS_ZH = [
+    "人工智慧", "人工智能", "機器學習", "深度學習", "神經網路", "神经网络",
+    "大型語言模型", "大语言模型", "生成式ai", "生成式人工智慧", "生成式人工智能",
+    "自然語言處理", "自然语言处理", "聊天機器人", "聊天机器人",
+]
+_AI_KEYWORD_RE = re.compile(
+    r"\b(" + "|".join(re.escape(k) for k in _AI_KEYWORDS_EN) + r")\b",
+    re.IGNORECASE,
+)
+
 # {source_id: {"items": [...], "fetched_at": float, "error": str | None}}
 _cache: dict = {}
 _cache_lock = Lock()
+
+
+def _is_ai_related(title: str, summary: str) -> bool:
+    """依標題與摘要的關鍵字，粗略判斷這則新聞是否與 AI 相關。
+
+    這是簡單的關鍵字比對，不是語意分類，目的是提供「AI 新聞 / 非AI新聞」
+    篩選功能的合理近似值，未來若需要更準確的分類，可以在這裡改接
+    語意分類模型或 LLM API。
+    """
+    text = f"{title} {summary}"
+    if _AI_KEYWORD_RE.search(text):
+        return True
+    lowered = text.lower()
+    return any(keyword in lowered for keyword in _AI_KEYWORDS_ZH)
 
 
 def _strip_html(raw_html: str) -> str:
@@ -86,6 +118,7 @@ def _fetch_single_source(source: dict) -> dict:
                     "published": published,
                     "source_id": source_id,
                     "source_name": source["name"],
+                    "is_ai": _is_ai_related(title, summary),
                 }
             )
 

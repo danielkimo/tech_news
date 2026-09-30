@@ -11,6 +11,19 @@
   白色新聞卡片搭配脈動心跳線條，右上角有一顆綠色「Live」指示點，
   對應網站首頁 Hero 區的即時抓取意象。Icon 原始設計檔與產生腳本見下方「重新產生 Icon」。
 
+## 點新聞看原文後如何返回列表
+
+在 App 裡點擊新聞卡片會讓 `WKWebView` 直接導航到該篇文章的原始網頁（與網站版
+在新分頁開啟不同，App 只有一個 WebView 畫面）。為了避免使用者卡在文章頁面出不來，
+提供三種返回新聞列表的方式：
+
+1. **畫面下方浮動按鈕**「← 回到新聞列表」：只要還能上一頁就會顯示。
+2. **導覽列左上角的返回箭頭**：同樣只在可以上一頁時顯示。
+3. **系統手勢**：從畫面左邊緣向右滑動（`allowsBackForwardNavigationGestures`）。
+
+三者都是呼叫 `WKWebView.goBack()`，效果等同瀏覽器的上一頁，會直接回到新聞列表
+畫面（捲動位置、已勾選的來源/AI篩選狀態都會維持）。
+
 ## 專案結構
 
 ```
@@ -19,8 +32,8 @@ ios/
 ├── TechPulse.xcodeproj/         # 由 project.yml 產生的 Xcode 專案（已包含在版控中，可直接開啟）
 └── TechPulse/
     ├── TechPulseApp.swift       # App 進入點
-    ├── ContentView.swift        # 主畫面：WebView + 載入中/錯誤狀態 + 重新整理按鈕
-    ├── WebView.swift            # WKWebView 的 SwiftUI 包裝（含下拉重新整理）
+    ├── ContentView.swift        # 主畫面：WebView + 載入中/錯誤狀態 + 重新整理/回到新聞列表按鈕
+    ├── WebView.swift            # WKWebView 的 SwiftUI 包裝（含下拉重新整理、上一頁導覽）
     ├── AppConfig.swift          # 設定要載入的網址（後端伺服器位置）
     └── Assets.xcassets/
         ├── AppIcon.appiconset/  # App Icon 各尺寸圖檔

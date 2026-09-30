@@ -4,12 +4,16 @@ import SwiftUI
 /// 將 Flask 網站包裝成原生 iOS App 的 WKWebView 包裝元件。
 ///
 /// 透過 SwiftUI 的 `UIViewRepresentable` 橋接 UIKit 的 `WKWebView`，
-/// 並用 `Coordinator` 處理載入狀態、錯誤、以及下拉重新整理（pull-to-refresh）。
+/// 並用 `Coordinator` 處理載入狀態、錯誤、下拉重新整理（pull-to-refresh），
+/// 以及點擊新聞卡片開啟原始網頁後，回到新聞列表的「上一頁」功能
+/// （`canGoBack` 會同步 WKWebView 是否可以上一頁，`goBackTrigger` 遞增時觸發 `goBack()`）。
 struct WebView: UIViewRepresentable {
     let url: URL
     @Binding var isLoading: Bool
     @Binding var loadError: String?
     @Binding var reloadTrigger: Int
+    @Binding var canGoBack: Bool
+    @Binding var goBackTrigger: Int
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -38,12 +42,19 @@ struct WebView: UIViewRepresentable {
             context.coordinator.lastReloadTrigger = reloadTrigger
             webView.load(URLRequest(url: url))
         }
+        if context.coordinator.lastGoBackTrigger != goBackTrigger {
+            context.coordinator.lastGoBackTrigger = goBackTrigger
+            if webView.canGoBack {
+                webView.goBack()
+            }
+        }
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate {
         let parent: WebView
         weak var webView: WKWebView?
         var lastReloadTrigger = 0
+        var lastGoBackTrigger = 0
 
         init(_ parent: WebView) {
             self.parent = parent
@@ -60,6 +71,7 @@ struct WebView: UIViewRepresentable {
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             parent.isLoading = false
+            parent.canGoBack = webView.canGoBack
             webView.scrollView.refreshControl?.endRefreshing()
         }
 
@@ -77,6 +89,7 @@ struct WebView: UIViewRepresentable {
 
         private func finishWithError(_ error: Error, webView: WKWebView) {
             parent.isLoading = false
+            parent.canGoBack = webView.canGoBack
             webView.scrollView.refreshControl?.endRefreshing()
             // -999 是使用者主動取消載入（例如快速切換頁面），不需要顯示錯誤訊息。
             if (error as NSError).code == NSURLErrorCancelled {
