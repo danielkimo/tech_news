@@ -67,6 +67,34 @@ NEWS_SOURCES = [
         "region": "tw",
         "language": "zh-Hant",
     },
+    {
+        "id": "cna_tech",
+        "name": "中央社 CNA - 科技",
+        "url": "https://feeds.feedburner.com/rsscna/technology",
+        "region": "tw",
+        "language": "zh-Hant",
+    },
+    {
+        "id": "bnext_meet",
+        "name": "數位時代 Meet創業小聚",
+        "url": "https://meet.bnext.com.tw/rss",
+        "region": "tw",
+        "language": "zh-Hant",
+    },
+    {
+        "id": "cool3c",
+        "name": "Cool3c",
+        "url": "https://www.cool3c.com/rss",
+        "region": "tw",
+        "language": "zh-Hant",
+    },
+    {
+        "id": "mashdigi",
+        "name": "Mashdigi",
+        "url": "https://mashdigi.com/feed",
+        "region": "tw",
+        "language": "zh-Hant",
+    },
 ]
 
 # 方便用 id 快速查詢來源設定
