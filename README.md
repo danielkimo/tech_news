@@ -67,6 +67,7 @@ curl "http://localhost:5000/api/news?sources=techcrunch,ithome"  # 只抓指定�
 | iThome | 國內 | https://www.ithome.com.tw/rss |
 | TechNews 科技新報 | 國內 | https://technews.tw/feed/ |
 | INSIDE 硬塞的網路趨勢觀察 | 國內 | https://www.inside.com.tw/feed/rss |
+| Yahoo奇摩新聞 - 科技 | 國內 | https://tw.news.yahoo.com/rss/technology |
 
 > 註：INSIDE 官方文件常提到的 `/feed` 路徑目前會回傳 404，
 > 實際可用的 RSS 路徑是 `/feed/rss`，已在 `sources.py` 中更新。

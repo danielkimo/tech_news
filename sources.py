@@ -60,6 +60,13 @@ NEWS_SOURCES = [
         "region": "tw",
         "language": "zh-Hant",
     },
+    {
+        "id": "yahoo_tw",
+        "name": "Yahoo奇摩新聞 - 科技",
+        "url": "https://tw.news.yahoo.com/rss/technology",
+        "region": "tw",
+        "language": "zh-Hant",
+    },
 ]
 
 # 方便用 id 快速查詢來源設定
