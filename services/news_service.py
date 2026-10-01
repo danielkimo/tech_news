@@ -128,15 +128,16 @@ def _fetch_single_source(source: dict) -> dict:
         return {"items": [], "error": str(exc)}
 
 
-def _get_cached_or_fetch(source: dict) -> dict:
-    """取得該來源的快取結果，若快取過期則重新抓取。"""
+def _get_cached_or_fetch(source: dict, force: bool = False) -> dict:
+    """取得該來源的快取結果，若快取過期（或 force=True）則重新抓取。"""
     source_id = source["id"]
     now = time.time()
 
-    with _cache_lock:
-        cached = _cache.get(source_id)
-        if cached and now - cached["fetched_at"] < CACHE_TTL_SECONDS:
-            return cached
+    if not force:
+        with _cache_lock:
+            cached = _cache.get(source_id)
+            if cached and now - cached["fetched_at"] < CACHE_TTL_SECONDS:
+                return cached
 
     result = _fetch_single_source(source)
     result["fetched_at"] = now
@@ -147,8 +148,11 @@ def _get_cached_or_fetch(source: dict) -> dict:
     return result
 
 
-def fetch_news(source_ids: list[str] | None = None) -> dict:
+def fetch_news(source_ids: list[str] | None = None, force: bool = False) -> dict:
     """平行抓取指定來源（預設全部）的新聞，回傳彙整結果。
+
+    `force=True` 時會無視記憶體快取，強制重新抓取每個來源的最新資料
+    （對應前端的「立即重新整理」按鈕）。
 
     回傳格式：
         {
@@ -170,7 +174,8 @@ def fetch_news(source_ids: list[str] | None = None) -> dict:
 
     with ThreadPoolExecutor(max_workers=max(len(selected_sources), 1)) as executor:
         future_to_source = {
-            executor.submit(_get_cached_or_fetch, source): source for source in selected_sources
+            executor.submit(_get_cached_or_fetch, source, force): source
+            for source in selected_sources
         }
         for future in as_completed(future_to_source, timeout=FETCH_TIMEOUT_SECONDS + 5):
             source = future_to_source[future]

@@ -112,7 +112,7 @@ function renderStatus(sources) {
     statusBarEl.innerHTML = okHtml + errorHtml;
 }
 
-async function loadNews() {
+async function loadNews(force = false) {
     const selectedIds = getSelectedSourceIds();
     if (!selectedIds.length) {
         lastFetchedItems = [];
@@ -132,7 +132,11 @@ async function loadNews() {
     statusBarEl.textContent = "";
 
     try {
-        const response = await fetch(`/api/news?sources=${encodeURIComponent(selectedIds.join(","))}`);
+        const params = new URLSearchParams({ sources: selectedIds.join(",") });
+        if (force) {
+            params.set("force", "1");
+        }
+        const response = await fetch(`/api/news?${params.toString()}`);
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -146,7 +150,7 @@ async function loadNews() {
 }
 
 document.querySelectorAll(".source-input").forEach((el) => {
-    el.addEventListener("change", loadNews);
+    el.addEventListener("change", () => loadNews());
 });
 
 selectAllBtn.addEventListener("click", () => {
@@ -159,7 +163,17 @@ selectNoneBtn.addEventListener("click", () => {
     loadNews();
 });
 
-refreshBtn.addEventListener("click", loadNews);
+refreshBtn.addEventListener("click", async () => {
+    refreshBtn.disabled = true;
+    refreshBtn.classList.add("is-refreshing");
+    try {
+        // 強制忽略伺服器端 5 分鐘快取，直接重新抓取各來源最新資料。
+        await loadNews(true);
+    } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.classList.remove("is-refreshing");
+    }
+});
 
 categoryBtns.forEach((btn) => {
     btn.addEventListener("click", () => {

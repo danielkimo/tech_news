@@ -22,11 +22,15 @@ def api_news():
     可用 query param `sources` 指定要抓取的來源，以逗號分隔，例如：
         /api/news?sources=techcrunch,ithome
     不帶 `sources` 參數時，預設抓取全部來源。
+
+    可用 query param `force=1` 無視伺服器端快取，強制重新抓取最新資料，
+    例如：/api/news?force=1
     """
     sources_param = request.args.get("sources", "")
     source_ids = [s.strip() for s in sources_param.split(",") if s.strip()] or None
+    force = request.args.get("force", "").lower() in ("1", "true", "yes")
 
-    result = fetch_news(source_ids)
+    result = fetch_news(source_ids, force=force)
     return jsonify(result)
 
 
